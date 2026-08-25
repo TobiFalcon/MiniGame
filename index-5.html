@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mind Rush ⚡</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,Arial,sans-serif;min-height:100vh;color:#fff;background:radial-gradient(circle at 20% 10%,#00d9ff33,transparent 28%),radial-gradient(circle at 85% 85%,#7c3aed44,transparent 30%),linear-gradient(135deg,#070b18,#11152d,#090b17);overflow-x:hidden}
+#fx{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.orb{position:absolute;border-radius:50%;background:#fff;opacity:.6;animation:rise linear forwards}
+@keyframes rise{to{transform:translateY(-110vh) scale(1.5);opacity:0}}
+.wrap{width:min(94%,760px);margin:auto;padding:25px 0 50px;position:relative;z-index:1}
+header{text-align:center;padding:35px 0 22px}.tag{display:inline-block;padding:7px 14px;border:1px solid #ffffff22;border-radius:30px;color:#8defff;background:#ffffff0a;font-size:13px}
+h1{font-size:clamp(42px,11vw,76px);margin:12px 0;background:linear-gradient(90deg,#fff,#7deaff,#c5a7ff,#fff);-webkit-background-clip:text;color:transparent}
+header p{color:#c7cde1;line-height:1.7}
+.panel{background:#ffffff0b;border:1px solid #ffffff1b;border-radius:26px;padding:28px;backdrop-filter:blur(15px);box-shadow:0 20px 70px #0008}
+#start{text-align:center}.startbtn,.btn{border:0;color:#fff;cursor:pointer;font-weight:800;border-radius:999px;padding:14px 24px;background:linear-gradient(135deg,#00bfe8,#7c3aed);box-shadow:0 10px 30px #00bfe833}
+.startbtn{margin-top:22px;font-size:17px}
+#game{display:none}.top{display:flex;justify-content:space-between;gap:10px;margin-bottom:15px;color:#aeeeff;font-weight:800}
+.timer{height:10px;background:#ffffff12;border-radius:20px;overflow:hidden;margin-bottom:22px}.timer i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#00d9ff,#8b5cf6);transition:width .1s linear}
+.question{font-size:25px;line-height:1.45;margin:20px 0}.choices{display:grid;gap:11px}
+.choice{padding:15px 17px;border-radius:16px;border:1px solid #ffffff1b;background:#ffffff0b;color:#fff;text-align:left;cursor:pointer;font-size:16px;font-weight:650}
+.choice:hover{background:#ffffff19}.choice.correct{background:#168b76}.choice.wrong{background:#a32d55}
+#feedback{min-height:30px;margin-top:15px;font-weight:800}.next{display:none;margin-top:12px}
+#result{display:none;text-align:center}.rank{font-size:58px;margin:15px 0}.big{font-size:32px;margin-bottom:8px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0}.stat{padding:15px;border-radius:17px;background:#ffffff0b;border:1px solid #ffffff15}.stat b{display:block;font-size:22px;color:#8defff}
+small{color:#9098b0}
+@media(max-width:520px){.panel{padding:21px}.question{font-size:21px}.stats{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="fx"></div>
+<div class="wrap">
+<header>
+<div class="tag">⚡ MINI GAME</div>
+<h1>MIND RUSH</h1>
+<p>Seberapa cepat otakmu bekerja?<br>Jawab sebelum waktu habis. Jangan panik 😎</p>
+</header>
+
+<section class="panel" id="start">
+<h2>🧠 Quick Challenge</h2>
+<p style="color:#c7cde1;line-height:1.7;margin-top:10px">10 pertanyaan. Setiap soal punya waktu terbatas. Semakin cepat dan benar, semakin tinggi skor.</p>
+<button class="startbtn" onclick="startGame()">MULAI 🔥</button>
+</section>
+
+<section class="panel" id="game">
+<div class="top"><span>Soal <span id="num">1</span>/10</span><span>Score: <span id="score">0</span></span></div>
+<div class="timer"><i id="timer"></i></div>
+<div class="question" id="question"></div>
+<div class="choices" id="choices"></div>
+<div id="feedback"></div>
+<button class="btn next" id="next" onclick="nextQuestion()">Lanjut →</button>
+</section>
+
+<section class="panel" id="result">
+<div class="rank" id="rank">⚡</div>
+<div class="big" id="title">Selesai!</div>
+<p id="message" style="color:#c7cde1;line-height:1.7"></p>
+<div class="stats">
+<div class="stat"><b id="finalScore">0</b>Score</div>
+<div class="stat"><b id="correct">0</b>Benar</div>
+<div class="stat"><b id="speed">0</b>Detik</div>
+</div>
+<button class="startbtn" onclick="location.reload()">🔄 Main Lagi</button>
+</section>
+</div>
+<script>
+const questions=[
+["Jika 3 apel + 2 apel = ?",["4","5","6","7"],1],
+["Apa yang selalu datang tetapi tidak pernah tiba?",["Kemarin","Besok","Pagi","Malam"],1],
+["Lanjutkan pola: 2, 4, 8, 16, ...",["20","24","30","32"],3],
+["Mana yang berbeda?",["Kucing","Anjing","Ikan","Mawar"],3],
+["Jika kamu menyalip orang di posisi kedua, kamu menjadi posisi...",["Pertama","Kedua","Ketiga","Keempat"],1],
+["Planet yang dikenal sebagai Planet Merah?",["Venus","Mars","Jupiter","Merkurius"],1],
+["Berapa sisi segitiga?",["2","3","4","5"],1],
+["Jika semua Blo adalah Zim dan semua Zim adalah Lom, maka Blo adalah...",["Lom","Bukan Lom","Tidak mungkin tahu","Keduanya"],0],
+["Huruf berikutnya: A, C, E, G, ...",["H","I","J","K"],1],
+["Apa yang punya banyak kunci tetapi tidak bisa membuka pintu?",["Piano","Rumah","Mobil","Jam"],0]
+];
+let index=0,score=0,correct=0,timeLeft=8,totalTime=0,interval,answered=false;
+function startGame(){document.getElementById("start").style.display="none";document.getElementById("game").style.display="block";render()}
+function render(){
+ answered=false;timeLeft=8;document.getElementById("num").textContent=index+1;document.getElementById("score").textContent=score;
+ document.getElementById("feedback").textContent="";document.getElementById("next").style.display="none";
+ const q=questions[index];document.getElementById("question").textContent=q[0];
+ document.getElementById("choices").innerHTML=q[1].map((x,i)=>`<button class="choice" onclick="answer(${i})">${x}</button>`).join("");
+ clearInterval(interval);interval=setInterval(()=>{timeLeft-=.1;totalTime+=.1;document.getElementById("timer").style.width=(timeLeft/8*100)+"%";if(timeLeft<=0){clearInterval(interval);answer(-1)}},100);
+}
+function answer(i){
+ if(answered)return;answered=true;clearInterval(interval);
+ const q=questions[index],buttons=document.querySelectorAll(".choice");
+ buttons.forEach((b,n)=>{b.disabled=true;if(n===q[2])b.classList.add("correct")});
+ if(i===q[2]){correct++;const bonus=Math.max(10,Math.round(timeLeft*10));score+=100+bonus;document.getElementById("feedback").textContent="⚡ BENAR! +"+(100+bonus)}
+ else{if(i>=0)buttons[i].classList.add("wrong");document.getElementById("feedback").textContent="💥 Salah! Jawaban: "+q[1][q[2]]}
+ document.getElementById("score").textContent=score;document.getElementById("next").style.display="inline-block";
+}
+function nextQuestion(){index++;if(index>=questions.length)return finish();render()}
+function finish(){
+ clearInterval(interval);document.getElementById("game").style.display="none";document.getElementById("result").style.display="block";
+ document.getElementById("finalScore").textContent=score;document.getElementById("correct").textContent=correct+"/10";document.getElementById("speed").textContent=Math.round(totalTime)+"s";
+ let rank,title,msg;
+ if(correct===10){rank="👑";title="MIND LEGEND";msg="Otakmu lagi mode final boss. Gila cepat! 🔥"}
+ else if(correct>=8){rank="⚡";title="LIGHTNING BRAIN";msg="Cepat, tepat, dan berbahaya. Mantap 😎"}
+ else if(correct>=6){rank="🧠";title="BRAIN PLAYER";msg="Lumayan kuat! Tinggal sedikit lagi menuju level legend."}
+ else if(correct>=4){rank="🌱";title="RISING MIND";msg="Pemanasan dulu. Coba lagi dan pecahkan skor sendiri!"}
+ else{rank="😂";title="CHAOS MODE";msg="Yang penting sudah berani mencoba. Rematch? 🗿"}
+ document.getElementById("rank").textContent=rank;document.getElementById("title").textContent=title;document.getElementById("message").textContent=msg;
+ for(let i=0;i<25;i++)setTimeout(particle,i*50);
+}
+function particle(){const e=document.createElement("div");e.className="orb";e.style.left=Math.random()*100+"vw";e.style.bottom="-20px";e.style.width=e.style.height=(4+Math.random()*8)+"px";e.style.animationDuration=(2+Math.random()*3)+"s";document.getElementById("fx").appendChild(e);setTimeout(()=>e.remove(),5000)}
+</script>
+</body>
+</html>
